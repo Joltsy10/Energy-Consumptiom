@@ -10,14 +10,14 @@ from src.model import LSTMModel
 
 app = FastAPI(title= "Energy Consumption Forecasting API")
 
-device = torch.device('cude' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model = LSTMModel(input_size = 1, hidden_size = 50, num_layers = 1, output_size = 1)
-model.load_state_dict(torch.load('../models/lstm_energy_model.pth', map_location=device))
+model.load_state_dict(torch.load('models/lstm_energy_model.pth', map_location=device))
 model.to(device)
 model.eval()
 
-with open('../models/scaler.pkl', 'rb') as f:
+with open('models/scaler.pkl', 'rb') as f:
     scaler = pickle.load(f)
 
 print("Model and Scaler loaded successfully!")

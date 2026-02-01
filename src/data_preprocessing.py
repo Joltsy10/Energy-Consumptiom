@@ -27,11 +27,11 @@ def create_sequence(data, seq_length):
 def prepare_data(df, seq_length=24):
 
     scaler = MinMaxScaler()
-    df['Global_active_power_scaled'] = scaler.fit_transform(
-        df[['Global_active_power']]
-    )
     
-    X, y = create_sequence(df['Global_active_power_scaled'].values, seq_length)
+    
+    X, y = create_sequence(df['Global_active_power'].values, seq_length)
+
+    scaler.fit(X_train)
     
     X = X.reshape((-1, seq_length, 1))
 
@@ -44,5 +44,13 @@ def prepare_data(df, seq_length=24):
     y_val = y[train_size:train_size+val_size]
     X_test = X[train_size+val_size:]
     y_test = y[train_size+val_size:]
+
+    X_train_scaled = scaler.transform(X_train.reshape(-1, 1)).reshape(X_train.shape)
+    X_val_scaled = scaler.transform(X_val.reshape(-1, 1)).reshape(X_val.shape)
+    X_test_scaled = scaler.transform(X_test.reshape(-1, 1)).reshape(X_test.shape)
+
+    y_train_scaled = scaler.transform(y_train.reshape(-1, 1)).flatten()
+    y_val_scaled = scaler.transform(y_val.reshape(-1, 1)).flatten()
+    y_test_scaled = scaler.transform(y_test.reshape(-1, 1)).flatten()
     
-    return (X_train, y_train), (X_val, y_val), (X_test, y_test), scaler
+    return (X_train_scaled, y_train_scaled), (X_val_scaled, y_val_scaled), (X_test_scaled, y_test_scaled), scaler

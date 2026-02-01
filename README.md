@@ -52,18 +52,29 @@ jupyter notebook notebooks/train_model.ipynb
 - Input: 24-hour sequence
 - Output: Next hour prediction
 
-## Results
 
-- Training Loss: 0.000509
-- Validation Loss: 0.000454
-- Test Loss: 0.000352
+## Model Performance (v1.0)
 
-## Model Performance
+**Current Status:** Baseline model using univariate time series (power consumption only)
 
-- **Accuracy**: 94.4% R² score on test set
-- **Error**: Mean absolute error of 0.08 kW (~8% MAPE)
-- **Peak Detection**: 90% recall, 88% precision
-- **Robustness**: Consistent performance across train/val/test splits
+**Metrics:**
+- R² Score: 0.94 (captures 94% of variance)
+- Peak Detection: 90% recall
+- Directional Accuracy: 44%
+- MAE: 0.114 kW
+
+**Baseline Comparison:**
+- Naive persistence: 0.072 kW MAE
+- LSTM (v1.0): 0.114 kW MAE
+
+**Analysis:**
+The naive baseline performs well due to high autocorrelation in the data (median hour-to-hour change of 6.8W). The univariate LSTM shows strong pattern recognition (94% R²) but requires temporal features to outperform persistence models.
+
+**Planned v2 Improvements:**
+- [ ] Add temporal features (hour, day of week, seasonality)
+- [ ] Multi-horizon forecasting (6hr, 12hr, 24hr ahead)
+- [ ] Enhanced baselines (moving average, SARIMA)
+- [ ] Hyperparameter optimization
 
 ## Technologies
 

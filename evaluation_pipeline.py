@@ -71,9 +71,21 @@ def main():
     model = model.to(device)
     model.eval()
 
-    with torch.no_grad():
-        x_test_tensor = torch.FloatTensor(x_test)
-        lstm_predictions = model(x_test_tensor).cpu().numpy().flatten()
+    def get_predictions_batched(model, data, device, batch_size=1024):
+        """Get predictions in batches to avoid OOM errors."""
+        model.eval()
+        predictions = []
+        
+        with torch.no_grad():
+            data_tensor = torch.FloatTensor(data)
+            for i in range(0, len(data_tensor), batch_size):
+                batch = data_tensor[i:i+batch_size].to(device)
+                batch_pred = model(batch).cpu().numpy()
+                predictions.append(batch_pred)
+        
+        return np.concatenate(predictions).flatten()
+    
+    lstm_predictions = get_predictions_batched(model, x_test, device, batch_size=1024)
 
     print(f"\n" + "="*60)
     print("LSTM MODEL PERFORMANCE")

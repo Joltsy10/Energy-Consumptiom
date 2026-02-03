@@ -101,7 +101,7 @@ def main():
     train_loader = Dataloader(train_dataset, batch_size = BATCH_SIZE, shuffle = False)
     val_loader = Dataloader(val_dataset, batch_size = BATCH_SIZE, shuffle = False)
 
-    device = ('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model = LSTMModel(
         input_size = 1,

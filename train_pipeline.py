@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataloader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 import pickle
 from pathlib import Path
@@ -36,7 +36,7 @@ def set_seed(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
     if torch.cuda.is_available():
-        torch.cuda.seed(seed)
+        torch.cuda.manual_seed(seed)
 
 def train_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
@@ -98,8 +98,8 @@ def main():
         torch.FloatTensor(y_val)
     )
 
-    train_loader = Dataloader(train_dataset, batch_size = BATCH_SIZE, shuffle = False)
-    val_loader = Dataloader(val_dataset, batch_size = BATCH_SIZE, shuffle = False)
+    train_loader = DataLoader(train_dataset, batch_size = BATCH_SIZE, shuffle = False)
+    val_loader = DataLoader(val_dataset, batch_size = BATCH_SIZE, shuffle = False)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -114,7 +114,7 @@ def main():
     print(f"Model initialized (hidden size = {HIDDEN_SIZE}, (num layers = {NUM_LAYERS}))")
 
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters, lr = LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr = LEARNING_RATE)
 
     best_val_loss = float('inf')
     patience_counter = 0

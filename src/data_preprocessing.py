@@ -31,7 +31,7 @@ def prepare_data(df, seq_length=24):
     
     X, y = create_sequence(df['Global_active_power'].values, seq_length)
 
-    scaler.fit(X_train)
+    
     
     X = X.reshape((-1, seq_length, 1))
 
@@ -44,6 +44,8 @@ def prepare_data(df, seq_length=24):
     y_val = y[train_size:train_size+val_size]
     X_test = X[train_size+val_size:]
     y_test = y[train_size+val_size:]
+    
+    scaler.fit(X_train.reshape(-1,1))
 
     X_train_scaled = scaler.transform(X_train.reshape(-1, 1)).reshape(X_train.shape)
     X_val_scaled = scaler.transform(X_val.reshape(-1, 1)).reshape(X_val.shape)

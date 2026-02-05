@@ -23,13 +23,16 @@ UCI Household Power Consumption Dataset
 ## Project Structure
 ```
 Energy-Consumptiom/
-├── data/              # Raw data files
-├── models/            # Saved model weights
-├── notebooks/         # Jupyter notebooks for training
-└── src/              # Source code modules
+├── api/             # Code for api    
+├── data/            # Raw data files
+├── models/          # Saved model weights
+└── src/             # Source code modules
     ├── model.py              # LSTM architecture
     ├── data_preprocessing.py # Data pipeline
+    ├── evaluation.py         # Eval of model based on baseline
     └── train.py              # Training logic
+├──evaluation_pipeline.py   # Single entry for evaluation of model
+└──train_pipeline.py        # Single entry for training
 ```
 
 ## Installation
@@ -42,14 +45,14 @@ pip install -r requirements.txt
 
 ## Usage
 ```python
-jupyter notebook notebooks/train_model.ipynb
+python train_pipeline.py
 ```
 
 ## Model Architecture
 
-- LSTM with 50 hidden units
+- LSTM with 64 hidden units
 - Single layer
-- Input: 24-hour sequence
+- Input: 168-hour sequence
 - Output: Next hour prediction
 
 
@@ -58,14 +61,14 @@ jupyter notebook notebooks/train_model.ipynb
 **Current Status:** Baseline model using univariate time series (power consumption only)
 
 **Metrics:**
-- R² Score: 0.94 (captures 94% of variance)
-- Peak Detection: 90% recall
-- Directional Accuracy: 44%
-- MAE: 0.114 kW
+- R² Score: 0.9442 (captures 94% of variance)
+- Peak Detection: 89.60% recall
+- Directional Accuracy: 44.19%
+- MAE: 0.076 kW
 
 **Baseline Comparison:**
 - Naive persistence: 0.072 kW MAE
-- LSTM (v1.0): 0.114 kW MAE
+- LSTM (v1.0): 0.076 kW MAE
 
 **Analysis:**
 The naive baseline performs well due to high autocorrelation in the data (median hour-to-hour change of 6.8W). The univariate LSTM shows strong pattern recognition (94% R²) but requires temporal features to outperform persistence models.
@@ -74,7 +77,6 @@ The naive baseline performs well due to high autocorrelation in the data (median
 - [ ] Add temporal features (hour, day of week, seasonality)
 - [ ] Multi-horizon forecasting (6hr, 12hr, 24hr ahead)
 - [ ] Enhanced baselines (moving average, SARIMA)
-- [ ] Hyperparameter optimization
 
 ## Technologies
 

@@ -29,4 +29,7 @@ data/*.csv
 # OS
 .DS_Store
 Thumbs.db
+
+#model
+.models/
 ```

@@ -14,8 +14,8 @@ DATA_PATH = 'data/household_power_consumption.txt'
 MODEL_PATH = 'models/best_model.pth'
 SCALER_PATH = 'models/scaler.pkl'
 
-SEQ_LEN = 24
-HIDDEN_SIZE = 50
+SEQ_LEN = 168
+HIDDEN_SIZE = 64
 NUM_LAYERS = 1
 
 # ============================================================================

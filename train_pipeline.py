@@ -18,15 +18,15 @@ DATA_PATH = "data/household_power_consumption.txt"
 MODEL_SAVE_PATH = "models/best_model.pth"
 SCALER_SAVE_PATH = "models/scaler.pkl"
 
-SEQ_LENGTH = 24
+SEQ_LENGTH = 168
 BATCH_SIZE = 64
-HIDDEN_SIZE = 50
+HIDDEN_SIZE = 64
 NUM_LAYERS = 1
-LEARNING_RATE = 0.001
-NUM_EPOCHS = 10
+LEARNING_RATE = 0.0003
+NUM_EPOCHS = 50
 
-EARLY_STOPPING_PATIENCE = 10
-EARLY_STOPPING_MIN_DELTA = 0.0001
+EARLY_STOPPING_PATIENCE = 20
+EARLY_STOPPING_MIN_DELTA = 0.000005
 
 # ============================================================================
 #                                  FUNCTIONS
@@ -98,7 +98,7 @@ def main():
         torch.FloatTensor(y_val)
     )
 
-    train_loader = DataLoader(train_dataset, batch_size = BATCH_SIZE, shuffle = False)
+    train_loader = DataLoader(train_dataset, batch_size = BATCH_SIZE, shuffle = True)
     val_loader = DataLoader(val_dataset, batch_size = BATCH_SIZE, shuffle = False)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

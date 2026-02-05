@@ -12,8 +12,8 @@ app = FastAPI(title= "Energy Consumption Forecasting API")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-model = LSTMModel(input_size = 1, hidden_size = 50, num_layers = 1, output_size = 1)
-model.load_state_dict(torch.load('models/lstm_energy_model.pth', map_location=device))
+model = LSTMModel(input_size = 1, hidden_size = 64, num_layers = 1, output_size = 1)
+model.load_state_dict(torch.load('models/best_model.pth', map_location=device))
 model.to(device)
 model.eval()
 
@@ -26,9 +26,9 @@ class PredictionInput(BaseModel):
     
     values : list[float] = Field(
         ...,
-        min_length = 24,
-        max_length = 24,
-        description= "24 hours of energy consumption values (in kW)"
+        min_length = 168,
+        max_length = 168,
+        description= "168 hours of energy consumption values (in kW)"
     )
 
 class PredictionOutput(BaseModel):
@@ -59,7 +59,7 @@ def predict(input_data : PredictionInput):
         scaled_values = scaler.transform(values)
         
         # Reshape for LSTM: (1, 24, 1) = (batch_size, sequence_length, features)
-        X = torch.FloatTensor(scaled_values).reshape(1, 24, 1).to(device)
+        X = torch.FloatTensor(scaled_values).reshape(1, 168, 1).to(device)
         
         # Make prediction
         with torch.no_grad():

@@ -31,5 +31,5 @@ data/*.csv
 Thumbs.db
 
 #model
-.models/
+models/
 ```

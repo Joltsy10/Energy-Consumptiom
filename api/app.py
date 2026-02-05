@@ -1,12 +1,19 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 import torch
 import pickle
 import sys
 import numpy as np
+import time
+from datetime import datetime
+import logging
+from pathlib import Path
 
 sys.path.append('../src')
 from src.model import LSTMModel
+Path("logs").mkdir(exist_ok=True)
+
+startup_time = time.time()
 
 app = FastAPI(title= "Energy Consumption Forecasting API")
 
@@ -31,12 +38,39 @@ class PredictionInput(BaseModel):
         description= "168 hours of energy consumption values (in kW)"
     )
 
+    @field_validator('values')
+    @classmethod
+    def validated_values(cls, v):
+        
+        if any (x < 0 for x in v):
+            raise ValueError("Energy cannot be negative")
+        
+        if any (x is None or np.isnan(x) for x in v):
+            raise ValueError("Input contains Nan values or None values")
+        
+        if any(x > 20 for x in v):
+            raise ValueError("Input has energy values greater than 20kW, check data again")
+        
+        if all(x==0 for x in v):
+            raise ValueError("Input has many zero values, check for bad data")
+        
+        return v
+
 class PredictionOutput(BaseModel):
 
     prediction : float
     prediction_kw : float
     input_hours : int
     model_version : str
+
+class HealthResponse(BaseModel):
+    Status : str
+    model_loaded : bool
+    scaler_loaded : bool
+    model_version : str
+    device : str
+    uptime_seconds: float
+    timestamp : str
 
 @app.get("/")
 def root():
@@ -71,19 +105,27 @@ def predict(input_data : PredictionInput):
         return PredictionOutput(
             prediction=float(prediction),
             prediction_kw=float(prediction),
-            input_hours=24,
-            model_version="v1.0"
+            input_hours=168,
+            model_version="v1.2"
         )
 
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"Prediction failed : {str(e)}")
     
-app.get("/health")
+@app.get("/health")
 def health():
+
+    uptime = time.time() - startup_time
+
+    is_healthy = model is not None and scaler is not None
+
     return {
-        "status": "Healthy",
+        "status": "Healthy" if is_healthy else "Unhealthy",
         "model_loaded": model is not None,
         "scaler_loaded": scaler is not None,
-        "device": str(device)
+        "model_version": "v1.2",
+        "device": str(device),
+        "uptime_seconds": round(uptime),
+        "timestamp": datetime.now().isoformat() 
     }
 

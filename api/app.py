@@ -15,7 +15,22 @@ Path("logs").mkdir(exist_ok=True)
 
 startup_time = time.time()
 
+logging.basicConfig(
+    level=logging.INFO,
+    formate = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/api.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title= "Energy Consumption Forecasting API")
+
+logger.info("="*60)
+logger.info("STARTING ENERGY FORECASTING API")
+logger.info("="*60)
+logger.info(f"Loading model from models/best_model.pth...")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -27,7 +42,11 @@ model.eval()
 with open('models/scaler.pkl', 'rb') as f:
     scaler = pickle.load(f)
 
-print("Model and Scaler loaded successfully!")
+logger.info("Model and Scaler loaded successfully!")
+
+logger.info("="*60)
+logger.info("API READY")
+logger.info("="*60)
 
 class PredictionInput(BaseModel):
     
@@ -87,20 +106,18 @@ def root():
 def predict(input_data : PredictionInput):
 
     try :
+        logger.info("Recieved prediction request")
+
         values = np.array(input_data.values).reshape(-1, 1)
-        
-        # Scale the input (same as training)
-        scaled_values = scaler.transform(values)
-        
-        # Reshape for LSTM: (1, 24, 1) = (batch_size, sequence_length, features)
+        scaled_values = scaler.transform(values) 
         X = torch.FloatTensor(scaled_values).reshape(1, 168, 1).to(device)
         
-        # Make prediction
         with torch.no_grad():
             prediction_scaled = model(X).cpu().numpy()
         
-        # Inverse transform to get original scale
         prediction = scaler.inverse_transform(prediction_scaled)[0][0]
+
+        logger.info(f"Prediction successful! Prediction : {prediction:.4f} kW")
 
         return PredictionOutput(
             prediction=float(prediction),
@@ -110,6 +127,7 @@ def predict(input_data : PredictionInput):
         )
 
     except Exception as e:
+        logger.error(f"Prediction FailedL {str(e)}", exc_info=True)
         raise HTTPException(status_code=500,detail=f"Prediction failed : {str(e)}")
     
 @app.get("/health")

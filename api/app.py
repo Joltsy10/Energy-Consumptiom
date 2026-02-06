@@ -17,7 +17,7 @@ startup_time = time.time()
 
 logging.basicConfig(
     level=logging.INFO,
-    formate = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler('logs/api.log'),
         logging.StreamHandler()

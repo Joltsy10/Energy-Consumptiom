@@ -32,4 +32,8 @@ Thumbs.db
 
 #model
 models/
+
+#logs
+logs/
+*.log
 ```

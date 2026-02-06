@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 import torch
 import pickle
@@ -26,6 +26,23 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title= "Energy Consumption Forecasting API")
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+
+    logger.info(f"Request: {request.method} {request.url.path}")
+
+    response = await call_next(request)
+
+    duration = time.time() - start_time
+
+    if response.status_code >= 400:
+        logger.warning(f"Response: {response.status_code} | Duration: {duration*1000:.2f}ms")
+    else:
+        logger.info(f"Response: {response.status_code} | Duration: {duration*1000:.2f}ms")
+    
+    return response
 
 logger.info("="*60)
 logger.info("STARTING ENERGY FORECASTING API")

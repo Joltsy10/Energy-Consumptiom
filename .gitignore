@@ -19,6 +19,7 @@ build/
 data/*.txt
 data/*.csv
 *.pkl
+archive/
 
 # IDEs
 .vscode/

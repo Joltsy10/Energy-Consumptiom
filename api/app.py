@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 import torch
 import pickle
@@ -100,13 +101,37 @@ class PredictionOutput(BaseModel):
     model_version : str
 
 class HealthResponse(BaseModel):
-    Status : str
+    status : str
     model_loaded : bool
     scaler_loaded : bool
     model_version : str
     device : str
     uptime_seconds: float
     timestamp : str
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError):
+    logger.warning(f"Validatoin error: {str(exc)}")
+    return JSONResponse(
+        status_code= 422,
+        content={
+            "error": "Validation error",
+            "detail" : str(exc),
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+@app.exception_handler(Exception)
+async def value_error_handler(request: Request, exc: Exception):
+    logger.warning(f"Validatoin error: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code= 500,
+        content={
+            "error": "Internal server error",
+            "detail" : "An unexpected server error occured",
+            "timestamp": datetime.now().isoformat()
+        }
+    )
 
 @app.get("/")
 def root():
@@ -121,6 +146,13 @@ def root():
 
 @app.post("/predict", response_model= PredictionOutput)
 def predict(input_data : PredictionInput):
+
+    if model is None or scaler is None:
+        logger.error("Prediction attempted but model/scaler is not loaded")
+        raise HTTPException(
+            status_code= 503,
+            detail= "Model not loaded, please contact admin"
+        )
 
     try :
         logger.info("Recieved prediction request")
@@ -143,10 +175,31 @@ def predict(input_data : PredictionInput):
             model_version="v1.2"
         )
 
-    except Exception as e:
-        logger.error(f"Prediction FailedL {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500,detail=f"Prediction failed : {str(e)}")
+    except HTTPException:
+        raise
+
+    except ValueError as e:
+        logger.warning(f"Input validation error: {str(e)}")
+        raise HTTPException(
+            status_code= 422,
+            detail= f"Input validation error: {str(e)}"
+        )    
     
+    except RuntimeError as e:
+        logger.warning(f"Model runtime error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Model predicted failed. Please try again later or contact admin"
+        )
+    
+    except Exception as e:
+        logger.error(f"Unexpecterd error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail= "An unexpected error occured. Please contact support or admin"
+        )
+
+
 @app.get("/health")
 def health():
 

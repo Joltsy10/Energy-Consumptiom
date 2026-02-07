@@ -89,7 +89,7 @@ The naive baseline performs well due to high autocorrelation in the data (median
 ## Next Steps
 
 - [X] Deploy model as REST API
-- [ ] Add monitoring and logging
+- [X] Add monitoring and logging
 - [ ] Dockerize the application
 - [ ] Implement CI/CD pipeline
 

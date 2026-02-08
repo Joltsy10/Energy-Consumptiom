@@ -98,9 +98,9 @@ Attempted to beat naive baseline through temporal feature engineering.
 4. Multi-horizon prediction would better demonstrate LSTM's sequential modeling strength
 
 **Future Work (V3)**
-- Multi-step ahead prediction (24h horizon)
-- Lag features (power_t-1, power_t-24, power_t-168)
-- LSTM encoder-decoder architecture
+- [ ] Multi-step ahead prediction (24h horizon)
+- [ ] Lag features (power_t-1, power_t-24, power_t-168)
+- [ ] LSTM encoder-decoder architecture
 
 ## Technologies
 
@@ -109,12 +109,6 @@ Attempted to beat naive baseline through temporal feature engineering.
 - Pandas
 - NumPy
 - Scikit-learn
-
-## Next Steps
-
-- [X] Deploy model as REST API
-- [X] Add monitoring and logging
-- [x] Dockerize the application
 
 ## Author
 

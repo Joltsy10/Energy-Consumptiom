@@ -73,7 +73,7 @@ python train_pipeline.py
 **Analysis:**
 The naive baseline performs well due to high autocorrelation in the data (median hour-to-hour change of 6.8W). The univariate LSTM shows strong pattern recognition (94% R²) but requires temporal features to outperform persistence models.
 
-# V2 Results (Feature Engineering)
+## V2 Results (Feature Engineering)
 
 Attempted to beat naive baseline through temporal feature engineering.
 

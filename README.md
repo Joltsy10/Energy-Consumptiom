@@ -50,7 +50,7 @@ python train_pipeline.py
 
 ## Model Architecture
 
-- LSTM with 64 hidden units
+- LSTM with 96 hidden units
 - Single layer
 - Input: 168-hour sequence
 - Output: Next hour prediction
@@ -73,10 +73,34 @@ python train_pipeline.py
 **Analysis:**
 The naive baseline performs well due to high autocorrelation in the data (median hour-to-hour change of 6.8W). The univariate LSTM shows strong pattern recognition (94% R²) but requires temporal features to outperform persistence models.
 
-**Planned v2 Improvements:**
-- [ ] Add temporal features (hour, day of week, seasonality)
-- [ ] Multi-horizon forecasting (6hr, 12hr, 24hr ahead)
-- [ ] Enhanced baselines (moving average, SARIMA)
+# V2 Results (Feature Engineering)
+
+Attempted to beat naive baseline through temporal feature engineering.
+
+## Features Added
+- Hour of day (cyclical encoding: sin/cos)
+- Day of week (cyclical encoding: sin/cos)  
+- Month (cyclical encoding: sin/cos)
+- Weekend indicator
+
+## Results
+| Model | MAE (kW) | vs Naive |
+|-------|----------|----------|
+| Naive | 0.0721 | baseline |
+| V1 (power only) | 0.0787 | +9% |
+| V2 (basic features) | 0.076 | +5% |
+| V2 (encoded features) | 0.0803 | +11% |
+
+## Key Learnings
+1. For single-step prediction on autocorrelated data, naive baseline is very strong
+2. Cyclical encoding didn't improve performance (possibly too complex for this task)
+3. Basic linear features (hour, day, weekend) performed better than encoded features
+4. Multi-horizon prediction would better demonstrate LSTM's sequential modeling strength
+
+## Future Work (V3)
+- Multi-step ahead prediction (24h horizon)
+- Lag features (power_t-1, power_t-24, power_t-168)
+- LSTM encoder-decoder architecture
 
 ## Technologies
 

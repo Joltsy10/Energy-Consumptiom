@@ -63,7 +63,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model = LSTMModel(
-        input_size= 5,
+        input_size= 8,
         hidden_size= HIDDEN_SIZE,
         num_layers= NUM_LAYERS,
         output_size= 1

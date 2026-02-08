@@ -15,12 +15,13 @@ from src.model import LSTMModel
 
 RANDOM_SEED = 42
 DATA_PATH = "data/household_power_consumption.txt"
-MODEL_SAVE_PATH = "models/best_model.pth"
-SCALER_SAVE_PATH = "models/scaler.pkl"
+MODEL_SAVE_PATH = "models/v2.0/best_model.pth"
+X_SCALER_SAVE_PATH = "models/v2.0/x_scaler.pkl"
+Y_SCALER_SAVE_PATH = "models/v2.0/y_scaler.pkl"
 
 SEQ_LENGTH = 168
 BATCH_SIZE = 64
-HIDDEN_SIZE = 64
+HIDDEN_SIZE = 96
 NUM_LAYERS = 1
 LEARNING_RATE = 0.0003
 NUM_EPOCHS = 50
@@ -86,7 +87,7 @@ def main():
     print(f"\nRandom seed set to {RANDOM_SEED}")
 
     df = load_data(DATA_PATH)
-    (x_train, y_train), (x_val, y_val), (x_test, y_test), scaler = prepare_data(df)
+    (x_train, y_train), (x_val, y_val), (x_test, y_test), x_scaler, y_scaler = prepare_data(df)
     print("\nData Loaded")
 
     train_dataset = TensorDataset(
@@ -104,7 +105,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model = LSTMModel(
-        input_size = 1,
+        input_size = 8,
         hidden_size = HIDDEN_SIZE,
         num_layers = NUM_LAYERS,
         output_size = 1
@@ -152,9 +153,12 @@ def main():
     print(f"  Best validation loss: {best_val_loss:.6f}")
     print(f"  Total epochs: {epoch+1}")
 
-    Path(SCALER_SAVE_PATH).parent.mkdir(parents=True, exist_ok=True)
-    with open(SCALER_SAVE_PATH, 'wb') as f:
-        pickle.dump(scaler, f)
+    Path(X_SCALER_SAVE_PATH).parent.mkdir(parents=True, exist_ok=True)
+    with open(X_SCALER_SAVE_PATH, 'wb') as f:
+        pickle.dump(x_scaler, f)
+    Path(Y_SCALER_SAVE_PATH).parent.mkdir(parents=True, exist_ok=True)
+    with open(Y_SCALER_SAVE_PATH, 'wb') as f:
+        pickle.dump(y_scaler, f)
 
     print("Best Model and Scaler saved")
     print("TRAINING COMPLETE")

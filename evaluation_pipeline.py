@@ -11,11 +11,12 @@ from src.evaluation import evaluate_model, print_metrics
 #                               CONFIGURATION
 # ============================================================================
 DATA_PATH = 'data/household_power_consumption.txt'
-MODEL_PATH = 'models/best_model.pth'
-SCALER_PATH = 'models/scaler.pkl'
+MODEL_PATH = 'models/v2.0/best_model.pth'
+X_SCALER_PATH = 'models/v2.0/x_scaler.pkl'
+Y_SCALER_PATH = 'models/v2.0/y_scaler.pkl'
 
 SEQ_LEN = 168
-HIDDEN_SIZE = 64
+HIDDEN_SIZE = 96
 NUM_LAYERS = 1
 
 # ============================================================================
@@ -55,14 +56,14 @@ def main():
     print("="*60)
 
     df = load_data(DATA_PATH)
-    (x_train, y_train), (x_val, y_val), (x_test, y_test), scaler = prepare_data(
+    (_x_train, _y_train), (_x_val, _y_val), (x_test, y_test), x_scaler, y_scaler = prepare_data(
         df, seq_length=SEQ_LEN
     )
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model = LSTMModel(
-        input_size= 1,
+        input_size= 5,
         hidden_size= HIDDEN_SIZE,
         num_layers= NUM_LAYERS,
         output_size= 1
@@ -72,7 +73,6 @@ def main():
     model.eval()
 
     def get_predictions_batched(model, data, device, batch_size=1024):
-        """Get predictions in batches to avoid OOM errors."""
         model.eval()
         predictions = []
         
@@ -90,13 +90,13 @@ def main():
     print(f"\n" + "="*60)
     print("LSTM MODEL PERFORMANCE")
     print("="*60)
-    lstm_metrics = evaluate_model(lstm_predictions, y_test, scaler)
+    lstm_metrics = evaluate_model(lstm_predictions, y_test, y_scaler)
     print_metrics(lstm_metrics)
 
     print("\n1. NAIVE BASELINE (predict last value)")
     print("-"*60)
     naive_pred, naive_actual = naive_baseline(y_test)
-    naive_metrics = evaluate_model(naive_pred, naive_actual, scaler)
+    naive_metrics = evaluate_model(naive_pred, naive_actual, y_scaler)
     print(f"MAE:  {naive_metrics['mae']:.4f} kW")
     print(f"RMSE: {naive_metrics['rmse']:.4f} kW")
     print(f"MAPE: {naive_metrics['mape']:.2f}%")
@@ -105,7 +105,7 @@ def main():
     print("\n2. SEASONAL NAIVE BASELINE (predict 24h ago)")
     print("-"*60)
     seasonal_pred, seasonal_actual = seasonal_naive_baseline(y_test, season=24)
-    seasonal_metrics = evaluate_model(seasonal_pred, seasonal_actual, scaler)
+    seasonal_metrics = evaluate_model(seasonal_pred, seasonal_actual, y_scaler)
     print(f"MAE:  {seasonal_metrics['mae']:.4f} kW")
     print(f"RMSE: {seasonal_metrics['rmse']:.4f} kW")
     print(f"MAPE: {seasonal_metrics['mape']:.2f}%")
@@ -114,7 +114,7 @@ def main():
     print("\n3. MOVING AVERAGE BASELINE (24h window)")
     print("-"*60)
     ma_pred, ma_actual = moving_average_baseline(y_test, window=24)
-    ma_metrics = evaluate_model(ma_pred, ma_actual, scaler)
+    ma_metrics = evaluate_model(ma_pred, ma_actual, y_scaler)
     print(f"MAE:  {ma_metrics['mae']:.4f} kW")
     print(f"RMSE: {ma_metrics['rmse']:.4f} kW")
     print(f"MAPE: {ma_metrics['mape']:.2f}%")

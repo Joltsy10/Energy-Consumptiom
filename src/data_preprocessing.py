@@ -13,16 +13,14 @@ def load_data(filepath):
     df.dropna(inplace=True)
     return df
 
-def create_sequence(data, target, seq_length):
-
-    xs,ys = [], []
-    for i in range(len(data) - seq_length):
+def create_sequence(data, target, seq_length, horizon=24):
+    xs, ys = [], []
+    for i in range(len(data) - seq_length - horizon):
         x = data[i:i + seq_length]
-        y = target[i + seq_length]
+        y = target[i + seq_length:i + seq_length + horizon]
         xs.append(x)
         ys.append(y)
-
-    return np.array(xs),np.array(ys)
+    return np.array(xs), np.array(ys)
 
 def add_time_features(df):
     df["hour_sin"] = np.sin(2 * np.pi * df['datetime'].dt.hour / 24.0)
@@ -36,7 +34,7 @@ def add_time_features(df):
 
     return df
 
-def prepare_data(df, seq_length=24):
+def prepare_data(df, seq_length=24, horizon = 24):
 
     df = add_time_features(df)
 
@@ -54,7 +52,7 @@ def prepare_data(df, seq_length=24):
     data = df[feature_cols].values
     target = df['Global_active_power'].values
     
-    X, y = create_sequence(data, target, seq_length)
+    X, y = create_sequence(data, target, seq_length , horizon)
 
     num_features = X.shape[-1]
 
@@ -77,8 +75,8 @@ def prepare_data(df, seq_length=24):
     X_test_scaled = X_scaler.transform(X_test.reshape(-1, num_features)).reshape(X_test.shape)
 
     y_scaler = MinMaxScaler()
-    y_train_scaled = y_scaler.fit_transform(y_train.reshape(-1, 1)).flatten()
-    y_val_scaled = y_scaler.transform(y_val.reshape(-1, 1)).flatten()
-    y_test_scaled = y_scaler.transform(y_test.reshape(-1, 1)).flatten()
+    y_train_scaled = y_scaler.fit_transform(y_train.reshape(-1, 1)).reshape(y_train.shape)
+    y_val_scaled = y_scaler.transform(y_val.reshape(-1, 1)).reshape(y_val.shape)
+    y_test_scaled = y_scaler.transform(y_test.reshape(-1, 1)).reshape(y_test.shape)
     
     return (X_train_scaled, y_train_scaled), (X_val_scaled, y_val_scaled), (X_test_scaled, y_test_scaled), X_scaler, y_scaler

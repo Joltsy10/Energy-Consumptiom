@@ -4,13 +4,16 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 def evaluate_model(predictions, actual, scaler = None):
 
     if scaler is not None:
-        predictions_orig = scaler.inverse_transform(predictions.reshape(-1, 1)).flatten()
-        actual_orig = scaler.inverse_transform(actual.reshape(-1, 1)).flatten()
+        predictions_orig = scaler.inverse_transform(predictions.reshape(-1, 1))
+        actual_orig = scaler.inverse_transform(actual.reshape(-1, 1))
     else:
         predictions_orig = predictions
         actual_orig = actual
 
     metrics = {}
+
+    predictions_flat = predictions_orig.flatten()
+    actual_flat = actual_orig.flatten()
 
     metrics['mae'] = mean_absolute_error(actual_orig, predictions_orig)
     metrics['mse'] = mean_squared_error(actual_orig, predictions_orig)

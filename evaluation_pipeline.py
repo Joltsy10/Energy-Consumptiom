@@ -24,17 +24,19 @@ NUM_LAYERS = 1
 # ============================================================================
 
 def naive_baseline(y_test):
-    predictions = y_test[:-1]
-    actual = y_test[1:]
-    
+    # y_test is now (n_samples, 24)
+    # naive: predict last known value for all 24 steps
+    # we don't have the last known value in y_test directly
+    # so just compare first step prediction repeated
+    predictions = np.repeat(y_test[:, 0:1], 24, axis=1)
+    actual = y_test
     return predictions, actual
 
-def seasonal_naive_baseline(y_test, season = 24):
+def seasonal_naive_baseline(y_test, season=24):
     predictions = y_test[:-season]
     actual = y_test[season:]
-
     return predictions, actual
-
+"""
 def moving_average_baseline(y_test, window = 24):
     predictions = []
     actuals = []
@@ -45,6 +47,7 @@ def moving_average_baseline(y_test, window = 24):
         actuals.append(y_test[i])
 
     return np.array(predictions), np.array(actuals)
+    """
 
 # ============================================================================
 #                           MAIN EVALUATION PIPELINE
@@ -66,7 +69,7 @@ def main():
         input_size= 8,
         hidden_size= HIDDEN_SIZE,
         num_layers= NUM_LAYERS,
-        output_size= 1
+        output_size= 24
     )
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
     model = model.to(device)
@@ -77,13 +80,12 @@ def main():
         predictions = []
         
         with torch.no_grad():
-            data_tensor = torch.FloatTensor(data)
-            for i in range(0, len(data_tensor), batch_size):
-                batch = data_tensor[i:i+batch_size].to(device)
+            for i in range(0, len(data), batch_size):
+                batch = torch.FloatTensor(data[i:i+batch_size]).to(device)
                 batch_pred = model(batch).cpu().numpy()
                 predictions.append(batch_pred)
         
-        return np.concatenate(predictions).flatten()
+        return np.concatenate(predictions)
     
     lstm_predictions = get_predictions_batched(model, x_test, device, batch_size=1024)
 
@@ -109,7 +111,7 @@ def main():
     print(f"MAE:  {seasonal_metrics['mae']:.4f} kW")
     print(f"RMSE: {seasonal_metrics['rmse']:.4f} kW")
     print(f"MAPE: {seasonal_metrics['mape']:.2f}%")
-    
+    """
     # Moving average
     print("\n3. MOVING AVERAGE BASELINE (24h window)")
     print("-"*60)
@@ -118,6 +120,7 @@ def main():
     print(f"MAE:  {ma_metrics['mae']:.4f} kW")
     print(f"RMSE: {ma_metrics['rmse']:.4f} kW")
     print(f"MAPE: {ma_metrics['mape']:.2f}%")
+    """
     
     # Summary comparison
     print("\n" + "="*60)
@@ -127,7 +130,7 @@ def main():
     print("-"*60)
     print(f"{'Naive (t-1)':<25} | {naive_metrics['mae']:<10.4f} | {naive_metrics['rmse']:<10.4f} | {naive_metrics['mape']:<10.2f}")
     print(f"{'Seasonal Naive (t-24)':<25} | {seasonal_metrics['mae']:<10.4f} | {seasonal_metrics['rmse']:<10.4f} | {seasonal_metrics['mape']:<10.2f}")
-    print(f"{'Moving Average (24h)':<25} | {ma_metrics['mae']:<10.4f} | {ma_metrics['rmse']:<10.4f} | {ma_metrics['mape']:<10.2f}")
+    #print(f"{'Moving Average (24h)':<25} | {ma_metrics['mae']:<10.4f} | {ma_metrics['rmse']:<10.4f} | {ma_metrics['mape']:<10.2f}")
     print(f"{'LSTM (V1)':<25} | {lstm_metrics['mae']:<10.4f} | {lstm_metrics['rmse']:<10.4f} | {lstm_metrics['mape']:<10.2f}")
     print("-"*60)
 

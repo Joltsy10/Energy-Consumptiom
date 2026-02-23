@@ -24,9 +24,9 @@ BATCH_SIZE = 64
 HIDDEN_SIZE = 96
 NUM_LAYERS = 1
 LEARNING_RATE = 0.0003
-NUM_EPOCHS = 100
+NUM_EPOCHS = 150
 
-EARLY_STOPPING_PATIENCE = 20
+EARLY_STOPPING_PATIENCE = 30
 EARLY_STOPPING_MIN_DELTA = 0.000005
 
 # ============================================================================
@@ -48,7 +48,7 @@ def train_epoch(model, dataloader, criterion, optimizer, device):
         y_batch = y_batch.to(device)
 
         predictions = model(x_batch)
-        loss = criterion(predictions.squeeze(), y_batch)
+        loss = criterion(predictions, y_batch)
 
         optimizer.zero_grad()
         loss.backward()
@@ -68,7 +68,7 @@ def validate(model, dataloader, criterion, device):
             y_batch = y_batch.to(device)
 
             predictions = model(x_batch)
-            loss = criterion(predictions.squeeze(), y_batch)
+            loss = criterion(predictions, y_batch)
 
             total_loss += loss
 
@@ -90,6 +90,8 @@ def main():
     (x_train, y_train), (x_val, y_val), (x_test, y_test), x_scaler, y_scaler = prepare_data(df)
     print("\nData Loaded")
 
+    print(y_train.shape)
+
     train_dataset = TensorDataset(
         torch.FloatTensor(x_train),
         torch.FloatTensor(y_train)
@@ -108,7 +110,7 @@ def main():
         input_size = 8,
         hidden_size = HIDDEN_SIZE,
         num_layers = NUM_LAYERS,
-        output_size = 1
+        output_size = 24
     )
     model.to(device)
 
